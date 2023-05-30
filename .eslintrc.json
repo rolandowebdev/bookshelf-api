@@ -10,8 +10,8 @@
 		"ecmaVersion": "latest"
 	},
 	"rules": {
-		"indent": "off",
 		"semi": "off",
+		"indent": "off",
 		"no-tabs": "off",
 		"no-console": "off"
 	}

@@ -16,10 +16,7 @@ const addBook = (request, h) => {
 	const id = nanoid(16)
 	const insertedAt = new Date().toISOString()
 	const updatedAt = insertedAt
-	let finished
-
-	if (pageCount === readPage) finished = true
-	else finished = false
+	const finished = pageCount === readPage
 
 	const newBook = {
 		id,
@@ -37,44 +34,45 @@ const addBook = (request, h) => {
 	}
 
 	if (!name || name === '') {
-		const response = h.response({
-			status: 'fail',
-			message: 'Gagal menambahkan buku. Mohon isi nama buku',
-		})
-		response.code(400)
-		return response
+		return h
+			.response({
+				status: 'fail',
+				message: 'Gagal menambahkan buku. Mohon isi nama buku',
+			})
+			.code(400)
 	}
 
 	if (readPage > pageCount) {
-		const response = h.response({
-			status: 'fail',
-			message:
-				'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
-		})
-		response.code(400)
-		return response
+		return h
+			.response({
+				status: 'fail',
+				message:
+					'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
+			})
+			.code(400)
 	}
 
 	books.push(newBook)
-	const isSuccess = books.filter((book) => book.id === id).length > 0
+	const isSuccess = books.some((book) => book.id === id)
 
 	if (isSuccess) {
-		const response = h.response({
-			status: 'success',
-			message: 'Buku berhasil ditambahkan',
-			data: {
-				bookId: id,
-			},
-		})
-		response.code(201)
-		return response
+		return h
+			.response({
+				status: 'success',
+				message: 'Buku berhasil ditambahkan',
+				data: {
+					bookId: id,
+				},
+			})
+			.code(201)
 	}
-	const response = h.response({
-		status: 'fail',
-		message: 'Buku gagal ditambahkan',
-	})
-	response.code(500)
-	return response
+
+	return h
+		.response({
+			status: 'fail',
+			message: 'Buku gagal ditambahkan',
+		})
+		.code(500)
 }
 
 const getAllBooks = (request, h) => {
@@ -84,57 +82,60 @@ const getAllBooks = (request, h) => {
 
 	if (name) {
 		const nameQuery = name.toLowerCase()
-		bookQuery = books.filter((b) => b.name.toLowerCase().includes(nameQuery))
+		bookQuery = books.filter((book) =>
+			book.name.toLowerCase().includes(nameQuery)
+		)
 	}
 
-	if (reading) {
-		bookQuery = books.filter((b) => Number(b.reading) === Number(reading))
+	if (reading !== undefined) {
+		const isReading = reading === '1'
+		bookQuery = books.filter((book) => book.reading === isReading)
 	}
 
-	if (finished) {
-		bookQuery = books.filter((b) => Number(b.finished) === Number(finished))
+	if (finished !== undefined) {
+		const isFinished = finished === '1'
+		bookQuery = books.filter((book) => book.finished === isFinished)
 	}
 
-	const response = h.response({
+	const response = {
 		status: 'success',
 		data: {
-			books: bookQuery.map((book) => ({
-				id: book.id,
-				name: book.name,
-				publisher: book.publisher,
+			books: bookQuery.map(({ id, name, publisher }) => ({
+				id,
+				name,
+				publisher,
 			})),
 		},
-	})
-	response.code(200)
-	return response
+	}
+
+	return h.response(response).code(200)
 }
 
 const getBookById = (request, h) => {
 	const { id } = request.params
-	const book = books.filter((b) => b.id === id)[0]
+	const book = books.find((book) => book.id === id)
 
-	if (book !== undefined) {
-		const response = h.response({
-			status: 'success',
-			data: {
-				book,
-			},
-		})
-		response.code(200)
-		return response
+	if (book) {
+		return h
+			.response({
+				status: 'success',
+				data: {
+					book,
+				},
+			})
+			.code(200)
 	}
 
-	const response = h.response({
-		status: 'fail',
-		message: 'Buku tidak ditemukan',
-	})
-	response.code(404)
-	return response
+	return h
+		.response({
+			status: 'fail',
+			message: 'Buku tidak ditemukan',
+		})
+		.code(404)
 }
 
 const updateBookById = (request, h) => {
 	const { id } = request.params
-
 	const {
 		name,
 		year,
@@ -150,22 +151,22 @@ const updateBookById = (request, h) => {
 	const index = books.findIndex((book) => book.id === id)
 
 	if (!name) {
-		const response = h.response({
-			status: 'fail',
-			message: 'Gagal memperbarui buku. Mohon isi nama buku',
-		})
-		response.code(400)
-		return response
+		return h
+			.response({
+				status: 'fail',
+				message: 'Gagal memperbarui buku. Mohon isi nama buku',
+			})
+			.code(400)
 	}
 
 	if (readPage > pageCount) {
-		const response = h.response({
-			status: 'fail',
-			message:
-				'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
-		})
-		response.code(400)
-		return response
+		return h
+			.response({
+				status: 'fail',
+				message:
+					'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
+			})
+			.code(400)
 	}
 
 	if (index !== -1) {
@@ -182,20 +183,21 @@ const updateBookById = (request, h) => {
 			reading,
 			updatedAt,
 		}
-		const response = h.response({
-			status: 'success',
-			message: 'Buku berhasil diperbarui',
-		})
-		response.code(200)
-		return response
+
+		return h
+			.response({
+				status: 'success',
+				message: 'Buku berhasil diperbarui',
+			})
+			.code(200)
 	}
 
-	const response = h.response({
-		status: 'fail',
-		message: 'Gagal memperbarui buku. Id tidak ditemukan',
-	})
-	response.code(404)
-	return response
+	return h
+		.response({
+			status: 'fail',
+			message: 'Gagal memperbarui buku. Id tidak ditemukan',
+		})
+		.code(404)
 }
 
 const deleteBookById = (request, h) => {
@@ -204,20 +206,20 @@ const deleteBookById = (request, h) => {
 
 	if (index !== -1) {
 		books.splice(index, 1)
-		const response = h.response({
-			status: 'success',
-			message: 'Buku berhasil dihapus',
-		})
-		response.code(200)
-		return response
+		return h
+			.response({
+				status: 'success',
+				message: 'Buku berhasil dihapus',
+			})
+			.code(200)
 	}
 
-	const response = h.response({
-		status: 'fail',
-		message: 'Buku gagal dihapus. Id tidak ditemukan',
-	})
-	response.code(404)
-	return response
+	return h
+		.response({
+			status: 'fail',
+			message: 'Buku gagal dihapus. Id tidak ditemukan',
+		})
+		.code(404)
 }
 
 module.exports = {

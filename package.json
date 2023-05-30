@@ -1,7 +1,7 @@
 {
-	"name": "bookshelf-api",
+	"name": "dicoding-bookshelf-api",
 	"author": "rolandowebdev",
-	"description": "Bookshelf API for submission Dicoding Backend class.",
+	"description": "Bookshelf API for submission Dicoding Backend class fro beginner.",
 	"version": "1.0.0",
 	"main": "index.js",
 	"license": "MIT",
